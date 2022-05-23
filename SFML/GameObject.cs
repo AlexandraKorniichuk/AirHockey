@@ -1,17 +1,22 @@
 ﻿using SFML.Graphics;
+using SFML.System;
 
 namespace SFML
 {
     public class GameObject
     {
-        public CircleShape Circle;
+        public CircleShape Circle { get; private set; }
 
-        public CircleShape CreateCircle(int Radius)
+        public void CreateCircle(Color Color, int Radius)
         {
-            CircleShape circle = new CircleShape();
-            circle.FillColor = Color.Green;
-            circle.Radius = Radius;
-            return circle;
+            Circle = new CircleShape();
+            Circle.FillColor = Color;
+            Circle.Radius = Radius;
+        }
+
+        public void SetPosition(Vector2f Position)
+        {
+            Circle.Position = Position;
         }
     }
 }

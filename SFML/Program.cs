@@ -13,7 +13,7 @@ namespace SFML
             while (window.IsOpen)
             {
                 Game game = new Game(window);
-                game.GameLoop();
+                game.StartNewRound();
             }
         }
 
