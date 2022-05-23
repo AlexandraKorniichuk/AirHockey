@@ -1,6 +1,7 @@
 ﻿using SFML.System;
 using SFML.Graphics;
 using SFML.Window;
+using System;
 
 namespace SFML
 {
@@ -16,6 +17,7 @@ namespace SFML
         public const uint Width = 1000, Heigh = 500;
 
         private const int WinsAmountToWin = 7;
+        private Vector2f LastPlayerPosition;
 
         public Game(RenderWindow window)
         {
@@ -31,6 +33,7 @@ namespace SFML
             CreateObjects();
             SetStartPositions();
             Mouse.SetPosition((Vector2i)Player1.Circle.Position, Window);
+            SetDirections();
 
             GameLoop();
         }
@@ -42,8 +45,9 @@ namespace SFML
                 Window.DispatchEvents();
 
                 Draw();
-                Vector2i MousePosition = Mouse.GetPosition(Window);
+                Vector2f MousePosition = (Vector2f)Mouse.GetPosition(Window);
                 MoveObjects(MousePosition);
+                CheckClashes();
 
                 Window.Display();
                 Window.Clear();
@@ -68,7 +72,16 @@ namespace SFML
 
             position.X = Width - distanceFromEdge;
             Player2.SetPosition(position);
+        }
 
+        private void SetDirections()
+        {
+            Vector2f BotDirection = new Vector2f(0, 0.5f);
+            Vector2f StartDirection = new Vector2f(0.3f, 0.3f);
+
+            Player1.Direction = new Vector2f();
+            Player2.Direction = BotDirection;
+            Ball.Direction = StartDirection;
         }
 
         private void Draw()
@@ -78,15 +91,64 @@ namespace SFML
             Window.Draw(Ball.Circle);
         }
 
-        private void MoveObjects(Vector2i MousePosition)
+        private void MoveObjects(Vector2f MousePosition)
         {
-            if (IsMouseInside(MousePosition, Player1.Circle.Radius))
-                Player1.SetPosition((Vector2f)MousePosition);
+            Vector2f PlayerPosition = Player1.Circle.Position;
+            LastPlayerPosition = PlayerPosition;
+
+            if (IsMouseInside(MousePosition, PlayerRadius))
+                PlayerPosition = MousePosition;
+
+            if (!IsObjectYInside(Player2.Circle.Position, PlayerRadius))
+                Player2.Direction.Y *= -1;
+
+            if (!IsObjectXInside(Ball.Circle.Position, BallRadius))
+                Ball.Direction.X *= -1;
+            if (!IsObjectYInside(Ball.Circle.Position, BallRadius))
+                Ball.Direction.Y *= -1;
+
+            Player1.SetPosition(PlayerPosition);
+            Player2.ChangePosition();
+            Ball.ChangePosition();
+
+            Player1.Direction = PlayerPosition - LastPlayerPosition;
         }
 
-        private bool IsMouseInside(Vector2i mousePosition, float radius) =>
-            mousePosition.X >= 0 && mousePosition.X <= Width / 2 - radius * 2 &&
-            mousePosition.Y >= 0 && mousePosition.Y <= Heigh - radius * 2;
+        private bool IsMouseInside(Vector2f MousePosition, float Radius) =>
+            IsObjectXInside(MousePosition, Radius, Width / 2) && IsObjectYInside(MousePosition, Radius);
+
+        private bool IsObjectXInside(Vector2f position, float radius, uint width = Width) =>
+            position.X >= 0 && position.X <= width - radius * 2;
+
+        private bool IsObjectYInside(Vector2f position, float radius) =>
+            position.Y >= 0 && position.Y <= Heigh - radius * 2;
+
+        private void CheckClashes()
+        {
+            CheckClashWithPlayer(Player1);
+            CheckClashWithPlayer(Player2);
+        }
+
+        private void CheckClashWithPlayer(GameObject Player)
+        {
+            if (HaveObjectsClashed(Player.Circle.Position, Ball.Circle.Position, PlayerRadius, BallRadius))
+                SetBallDirectionAfterClash(Player.Direction);
+        }
+
+        private bool HaveObjectsClashed(Vector2f position1, Vector2f position2, float radius1, float radius2) =>
+            CalculateDistance(position1.X, position1.Y, position2.X, position2.Y) 
+            <= (radius1 + radius2) * (radius1 + radius2);
+
+        private float CalculateDistance(float x1, float y1, float x2, float y2) =>
+            (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+
+        private void SetBallDirectionAfterClash(Vector2f PlayerDirection)
+        {
+            Ball.Direction += PlayerRadius * PlayerDirection / BallRadius;
+        }
+
+        private bool HasBallReachedGate() =>
+            Ball.Circle.Position.X <= 0 || Ball.Circle.Position.X >= Width;
 
         private bool IsEndRound() =>
             Player1.WinsAmount == WinsAmountToWin || Player2.WinsAmount == WinsAmountToWin;
