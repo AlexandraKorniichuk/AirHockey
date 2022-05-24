@@ -10,7 +10,7 @@ namespace SFML
         private GamePlayer Player1;
         private GamePlayer Player2;
         private GameObject Ball;
-        private const int PlayerRadius = 20, BallRadius = 10;
+        private const int PlayerRadius = 30, BallRadius = 15;
         private Color PlayerColor = Color.Green, BallColor = Color.Red;
 
         private RenderWindow Window;
@@ -47,6 +47,7 @@ namespace SFML
                 Draw();
                 Vector2f MousePosition = (Vector2f)Mouse.GetPosition(Window);
                 MoveObjects(MousePosition);
+                DecreaseBallDirection();
                 CheckClashes();
 
                 Window.Display();
@@ -77,11 +78,10 @@ namespace SFML
         private void SetDirections()
         {
             Vector2f BotDirection = new Vector2f(0, 0.5f);
-            Vector2f StartDirection = new Vector2f(0.3f, 0.3f);
 
             Player1.Direction = new Vector2f();
             Player2.Direction = BotDirection;
-            Ball.Direction = StartDirection;
+            Ball.Direction = new Vector2f();
         }
 
         private void Draw()
@@ -115,13 +115,24 @@ namespace SFML
         }
 
         private bool IsMouseInside(Vector2f MousePosition, float Radius) =>
-            IsObjectXInside(MousePosition, Radius, Width / 2) && IsObjectYInside(MousePosition, Radius);
+            IsObjectXInside(MousePosition, Radius, leftEdge: Width / 2 + PlayerRadius) && 
+            IsObjectYInside(MousePosition, Radius);
 
-        private bool IsObjectXInside(Vector2f position, float radius, uint width = Width) =>
-            position.X >= 0 && position.X <= width - radius * 2;
+        private bool IsObjectXInside(Vector2f position, float radius, uint rightEdge = 0, uint leftEdge = Width) =>
+            position.X >= rightEdge && position.X <= leftEdge - radius * 2;
 
         private bool IsObjectYInside(Vector2f position, float radius) =>
             position.Y >= 0 && position.Y <= Heigh - radius * 2;
+
+        private void DecreaseBallDirection()
+        {
+            const float percentage = 0.8f;
+            if (Ball.Direction.X > 0.3f)
+                Ball.Direction.X *= percentage;
+
+            if (Ball.Direction.Y > 0.3f)
+                Ball.Direction.Y *= percentage;
+        }
 
         private void CheckClashes()
         {
@@ -131,13 +142,13 @@ namespace SFML
 
         private void CheckClashWithPlayer(GameObject Player)
         {
-            if (HaveObjectsClashed(Player.Circle.Position, Ball.Circle.Position, PlayerRadius, BallRadius))
+            if (HaveObjectsClashed(Player.Circle.Position, Ball.Circle.Position))
                 SetBallDirectionAfterClash(Player.Direction);
         }
 
-        private bool HaveObjectsClashed(Vector2f position1, Vector2f position2, float radius1, float radius2) =>
-            CalculateDistance(position1.X, position1.Y, position2.X, position2.Y) 
-            <= (radius1 + radius2) * (radius1 + radius2);
+        private bool HaveObjectsClashed(Vector2f position1, Vector2f position2) =>
+            CalculateDistance(position1.X, position1.Y, position2.X, position2.Y)
+            <= (PlayerRadius + 2 * BallRadius) * (PlayerRadius + 2 * BallRadius);
 
         private float CalculateDistance(float x1, float y1, float x2, float y2) =>
             (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
@@ -145,6 +156,7 @@ namespace SFML
         private void SetBallDirectionAfterClash(Vector2f PlayerDirection)
         {
             Ball.Direction += PlayerRadius * PlayerDirection / BallRadius;
+            Ball.CheckMaxDirection();
         }
 
         private bool HasBallReachedGate() =>
