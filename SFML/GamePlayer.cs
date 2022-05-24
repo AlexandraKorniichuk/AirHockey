@@ -1,4 +1,4 @@
-﻿using SFML.Graphics;
+﻿using SFML.System;
 
 namespace SFML
 {
@@ -8,6 +8,7 @@ namespace SFML
         public GamePlayer()
         {
             WinsAmount = 0;
+            MaxDirection = new Vector2f(-0.3f, 0);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace SFML
             Circle.Position += Direction;
         }
 
-        public void CheckMaxDirection()
+        public void ChangeDirectionIfHigherThanMax()
         {
             if (Direction.X > MaxDirection.X)
                 Direction.X = MaxDirection.X;

@@ -1,7 +1,6 @@
 ﻿using SFML.System;
 using SFML.Graphics;
 using SFML.Window;
-using System;
 
 namespace SFML
 {
@@ -11,7 +10,7 @@ namespace SFML
         private GamePlayer Player2;
         private GameObject Ball;
         private const int PlayerRadius = 30, BallRadius = 15;
-        private Color PlayerColor = Color.Green, BallColor = Color.Red;
+        private Color PlayerColor = Color.Cyan, BallColor = Color.Magenta;
 
         private RenderWindow Window;
         public const uint Width = 1000, Heigh = 500;
@@ -33,7 +32,6 @@ namespace SFML
             CreateObjects();
             SetStartPositions();
             Mouse.SetPosition((Vector2i)Player1.Circle.Position, Window);
-            SetDirections();
 
             GameLoop();
         }
@@ -47,8 +45,9 @@ namespace SFML
                 Draw();
                 Vector2f MousePosition = (Vector2f)Mouse.GetPosition(Window);
                 MoveObjects(MousePosition);
+                ChangeDirections();
                 DecreaseBallDirection();
-                CheckClashes();
+                ChangeBallDirectionIfClashed();
 
                 Window.Display();
                 Window.Clear();
@@ -75,15 +74,6 @@ namespace SFML
             Player2.SetPosition(position);
         }
 
-        private void SetDirections()
-        {
-            Vector2f BotDirection = new Vector2f(0, 0.5f);
-
-            Player1.Direction = new Vector2f();
-            Player2.Direction = BotDirection;
-            Ball.Direction = new Vector2f();
-        }
-
         private void Draw()
         {
             Window.Draw(Player1.Circle);
@@ -99,19 +89,9 @@ namespace SFML
             if (IsMouseInside(MousePosition, PlayerRadius))
                 PlayerPosition = MousePosition;
 
-            if (!IsObjectYInside(Player2.Circle.Position, PlayerRadius))
-                Player2.Direction.Y *= -1;
-
-            if (!IsObjectXInside(Ball.Circle.Position, BallRadius))
-                Ball.Direction.X *= -1;
-            if (!IsObjectYInside(Ball.Circle.Position, BallRadius))
-                Ball.Direction.Y *= -1;
-
             Player1.SetPosition(PlayerPosition);
             Player2.ChangePosition();
             Ball.ChangePosition();
-
-            Player1.Direction = PlayerPosition - LastPlayerPosition;
         }
 
         private bool IsMouseInside(Vector2f MousePosition, float Radius) =>
@@ -124,6 +104,26 @@ namespace SFML
         private bool IsObjectYInside(Vector2f position, float radius) =>
             position.Y >= 0 && position.Y <= Heigh - radius * 2;
 
+        private void ChangeDirections()
+        {
+            Player2.Direction.X = Player2.MaxDirection.X;
+            if (Ball.Direction.X != 0)
+                Player2.Direction.Y = Player2.Direction.X * Ball.Direction.Y / Ball.Direction.X;
+            Player2.ChangeDirectionIfHigherThanMax();
+
+            ChangeDirectionIfObjectOutside(Ball);
+            ChangeDirectionIfObjectOutside(Player2, rightEndge: Width / 2);
+            Player1.Direction = Player1.Circle.Position - LastPlayerPosition;
+        }
+
+        private void ChangeDirectionIfObjectOutside(GameObject gameObject, uint rightEndge = 0)
+        {
+            if (!IsObjectXInside(gameObject.Circle.Position, gameObject.Circle.Radius, rightEdge: rightEndge))
+                gameObject.Direction.X *= -1;
+            if (!IsObjectYInside(gameObject.Circle.Position, gameObject.Circle.Radius))
+                gameObject.Direction.Y *= -1;
+        }
+
         private void DecreaseBallDirection()
         {
             const float percentage = 0.8f;
@@ -134,7 +134,7 @@ namespace SFML
                 Ball.Direction.Y *= percentage;
         }
 
-        private void CheckClashes()
+        private void ChangeBallDirectionIfClashed()
         {
             CheckClashWithPlayer(Player1);
             CheckClashWithPlayer(Player2);
@@ -156,7 +156,7 @@ namespace SFML
         private void SetBallDirectionAfterClash(Vector2f PlayerDirection)
         {
             Ball.Direction += PlayerRadius * PlayerDirection / BallRadius;
-            Ball.CheckMaxDirection();
+            Ball.ChangeDirectionIfHigherThanMax();
         }
 
         private bool HasBallReachedGate() =>
