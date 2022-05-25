@@ -17,6 +17,7 @@ namespace SFML
         public const uint Width = 1000, Heigh = 500;
 
         private const int WinsAmountToWin = 7;
+        private Text ScoreText;
         private Vector2f LastPlayerPosition;
 
         private Action OnWinsAmountChanged;
@@ -28,12 +29,14 @@ namespace SFML
             Player1 = new GamePlayer();
             Player2 = new GamePlayer();
             Ball = new GameObject();
+            ScoreText = new Text("", new Font("BasicText.ttf"));
         }
 
         public void StartNewRound()
         {
             CreateObjects();
             SetStartPositions();
+            CustomizeText();
             Mouse.SetPosition((Vector2i)Player1.Circle.Position, Window);
             OnWinsAmountChanged += SetStartPositions;
 
@@ -80,11 +83,26 @@ namespace SFML
             Player2.SetPosition(position);
         }
 
+        private void CustomizeText()
+        {
+            const float TextY = 3;
+            const uint Size = 40;
+            ScoreText.CharacterSize = Size;
+            ScoreText.Position = new Vector2f(Width / 2 - Size / 2, TextY);
+        }
+
         private void Draw()
         {
             Window.Draw(Player1.Circle);
             Window.Draw(Player2.Circle);
             Window.Draw(Ball.Circle);
+            Window.Draw(GetScoreMessage());
+        }
+
+        private Drawable GetScoreMessage()
+        {
+            ScoreText.DisplayedString = $"{Player1.WinsAmount} : {Player2.WinsAmount}";
+            return ScoreText;
         }
 
         private void MoveObjects(Vector2f MousePosition)
