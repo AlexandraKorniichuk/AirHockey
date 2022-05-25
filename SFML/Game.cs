@@ -16,7 +16,7 @@ namespace SFML
         private RenderWindow Window;
         public const uint Width = 1000, Heigh = 500;
 
-        private const int WinsAmountToWin = 7;
+        private const int WinsAmountToWin = 1;
         private Text ScoreText;
         private Vector2f LastPlayerPosition;
 
@@ -200,5 +200,25 @@ namespace SFML
 
         private bool IsEndRound() =>
             Player1.WinsAmount == WinsAmountToWin || Player2.WinsAmount == WinsAmountToWin;
+
+        public void DrawResults()
+        {
+            const uint Size = 40;
+            string Winner = Player1.WinsAmount == WinsAmountToWin ? nameof(Player1) : nameof(Player2);
+            Text ResultText = new Text
+            {
+                DisplayedString = $"Congratulations {Winner}",
+                CharacterSize = Size,
+                Position = new Vector2f(Width / 2 - 5 * Size, Heigh / 2),
+                Font = new Font("BasicText.ttf")
+            };
+
+            while (!Keyboard.IsKeyPressed(Keyboard.Key.Enter))
+            {
+                Window.Draw(ResultText);
+                Window.Display();
+                Window.Clear();
+            }
+        }
     }
 }
