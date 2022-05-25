@@ -10,11 +10,8 @@ namespace SFML
         {
             RenderWindow window = new RenderWindow(new VideoMode(Game.Width, Game.Heigh), "Circle");
             window.Closed += WindowClosed;
-            while (window.IsOpen)
-            {
-                Game game = new Game(window);
-                game.StartNewRound();
-            }
+            Game game = new Game(window);
+            game.StartNewRound();
         }
 
         static void WindowClosed(object sender, EventArgs e)

@@ -1,6 +1,7 @@
 ﻿using SFML.System;
 using SFML.Graphics;
 using SFML.Window;
+using System;
 
 namespace SFML
 {
@@ -18,6 +19,8 @@ namespace SFML
         private const int WinsAmountToWin = 7;
         private Vector2f LastPlayerPosition;
 
+        private Action OnWinsAmountChanged;
+
         public Game(RenderWindow window)
         {
             Window = window;
@@ -32,6 +35,7 @@ namespace SFML
             CreateObjects();
             SetStartPositions();
             Mouse.SetPosition((Vector2i)Player1.Circle.Position, Window);
+            OnWinsAmountChanged += SetStartPositions;
 
             GameLoop();
         }
@@ -48,6 +52,7 @@ namespace SFML
                 ChangeDirections();
                 DecreaseBallDirection();
                 ChangeBallDirectionIfClashed();
+                AddWin();
 
                 Window.Display();
                 Window.Clear();
@@ -61,11 +66,12 @@ namespace SFML
             Ball.CreateCircle(BallColor, BallRadius);
         }
 
-        private void SetStartPositions()
+        public void SetStartPositions()
         {
             const int distanceFromEdge = 100;
             Vector2f position = new Vector2f(Width / 2, Heigh / 2);
             Ball.SetPosition(position);
+            Ball.Direction = new Vector2f(0, 0);
 
             position.X = distanceFromEdge;
             Player1.SetPosition(position);
@@ -106,11 +112,6 @@ namespace SFML
 
         private void ChangeDirections()
         {
-            Player2.Direction.X = Player2.MaxDirection.X;
-            if (Ball.Direction.X != 0)
-                Player2.Direction.Y = Player2.Direction.X * Ball.Direction.Y / Ball.Direction.X;
-            Player2.ChangeDirectionIfHigherThanMax();
-
             ChangeDirectionIfObjectOutside(Ball);
             ChangeDirectionIfObjectOutside(Player2, rightEndge: Width / 2);
             Player1.Direction = Player1.Circle.Position - LastPlayerPosition;
@@ -159,8 +160,25 @@ namespace SFML
             Ball.ChangeDirectionIfHigherThanMax();
         }
 
-        private bool HasBallReachedGate() =>
-            Ball.Circle.Position.X <= 0 || Ball.Circle.Position.X >= Width;
+        private void AddWin()
+        {
+            if (HasBallReachedLeftGate())
+            {
+                Player2.WinsAmount++;
+                OnWinsAmountChanged.Invoke();
+            }
+            else if (HasBallReachedRightGate())
+            {
+                Player1.WinsAmount++;
+                OnWinsAmountChanged.Invoke();
+            }
+        }
+
+        private bool HasBallReachedLeftGate() =>
+            Ball.Circle.Position.X <= 0;
+
+        private bool HasBallReachedRightGate() =>
+             Ball.Circle.Position.X >= Width - 2 * BallRadius;
 
         private bool IsEndRound() =>
             Player1.WinsAmount == WinsAmountToWin || Player2.WinsAmount == WinsAmountToWin;

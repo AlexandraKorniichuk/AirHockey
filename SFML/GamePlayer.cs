@@ -8,7 +8,7 @@ namespace SFML
         public GamePlayer()
         {
             WinsAmount = 0;
-            MaxDirection = new Vector2f(-0.3f, 0);
+            Direction = new Vector2f(0, 0.5f);
         }
     }
 }
