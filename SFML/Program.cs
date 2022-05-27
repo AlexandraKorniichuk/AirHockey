@@ -11,7 +11,7 @@ namespace SFML
             RenderWindow window = new RenderWindow(new VideoMode(Game.Width, Game.Heigh), "Air Hockey");
             window.Closed += WindowClosed;
             Game game = new Game(window);
-            game.StartNewRound();
+            game.StartNewGame();
             game.DrawResults();
         }
 

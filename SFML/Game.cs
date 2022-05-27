@@ -11,17 +11,16 @@ namespace SFML
         private GamePlayer Player1;
         private GamePlayer Player2;
         private Ball Ball;
+        private Coin Coin;
 
         private RenderWindow Window;
         public const uint Width = 1000, Heigh = 500;
-        private const int PlayerRadius = 30, BallRadius = 15;
-        private Color PlayerColor = Color.Cyan, BallColor = Color.Magenta;
-
+        
         private const int WinsAmountToWin = 7;
         private Text ScoreText;
         private Vector2f LastPlayerPosition;
 
-        private Action OnWinsAmountChanged;
+        private Action OnRoundEnd;
 
         public Game(RenderWindow window)
         {
@@ -30,16 +29,17 @@ namespace SFML
             Player1 = new GamePlayer();
             Player2 = new GamePlayer();
             Ball = new Ball();
+            Coin = new Coin();
             ScoreText = new Text("", new Font("BasicText.ttf"));
         }
 
-        public void StartNewRound()
+        public void StartNewGame()
         {
             CreateObjects();
             SetStartPositions();
             CustomizeText();
             Mouse.SetPosition((Vector2i)Player1.circle.Position, Window);
-            OnWinsAmountChanged += SetStartPositions;
+            OnRoundEnd += SetStartPositions;
 
             GameLoop();
         }
@@ -61,14 +61,15 @@ namespace SFML
 
                 Window.Display();
                 Window.Clear();
-            } while (!IsEndRound()) ;
+            } while (!IsEndGame()) ;
         }
 
         private void CreateObjects()
         {
-            Player1.circle.CreateCircle(PlayerColor, PlayerRadius);
-            Player2.circle.CreateCircle(PlayerColor, PlayerRadius);
-            Ball.circle.CreateCircle(BallColor, BallRadius);
+            Player1.circle.CreateCircle(Colors.Player, (int)Radiuses.Player);
+            Player2.circle.CreateCircle(Colors.Player, (int)Radiuses.Player);
+            Ball.circle.CreateCircle(Colors.Ball, (int)Radiuses.Ball);
+            Coin.circle.CreateCircle(Colors.Coin, (int)Radiuses.Coin);
         }
 
         public void SetStartPositions()
@@ -84,6 +85,8 @@ namespace SFML
             position.X = Width - distanceFromEdge;
             Player2.circle.SetPosition(position);
             Player2.circle.Direction = new Vector2f(0, 15);
+
+            Coin.circle.SetRandomPosition();
         }
 
         private void CustomizeText()
@@ -99,6 +102,7 @@ namespace SFML
             Window.Draw(Player1.circle);
             Window.Draw(Player2.circle);
             Window.Draw(Ball.circle);
+            Window.Draw(Coin.circle);
             Window.Draw(GetScoreMessage());
         }
 
@@ -128,7 +132,7 @@ namespace SFML
         }
 
         private bool IsMouseInside(Vector2f MousePosition) =>
-            Player1.circle.IsObjectXInside(MousePosition, leftEdge: Width / 2 + PlayerRadius) && 
+            Player1.circle.IsObjectXInside(MousePosition, leftEdge: Width / 2 + (int)Radiuses.Player) && 
             Player1.circle.IsObjectYInside(MousePosition);
 
         private void ChangeDirections()
@@ -146,18 +150,8 @@ namespace SFML
 
         private void CheckClashWithPlayer(GamePlayer Player)
         {
-            if (HaveObjectsClashed(Player.circle.Position, Ball.circle.Position))
-                SetBallDirectionAfterClash(Player.circle.Direction);
-        }
-
-        private bool HaveObjectsClashed(Vector2f position1, Vector2f position2) =>
-            VectorExtencions.CalculateSquaredDistance(position1, position2)
-            <= (PlayerRadius + BallRadius) * (PlayerRadius + BallRadius);
-
-        private void SetBallDirectionAfterClash(Vector2f PlayerDirection)
-        {
-            Ball.circle.Direction += PlayerRadius * PlayerDirection / BallRadius;
-            Ball.ChangeDirectionIfHigherThanMax();
+            if (Ball.circle.HaveObjectsClashed(Player.circle))
+                Ball.circle.SetBallDirectionAfterClash(Player.circle.Direction);
         }
 
         private void CheckingForGoalScore()
@@ -165,12 +159,12 @@ namespace SFML
             if (HasBallReachedLeftGate())
             {
                 Player2.WinsAmount++;
-                OnWinsAmountChanged.Invoke();
+                OnRoundEnd.Invoke();
             }
             else if (HasBallReachedRightGate())
             {
                 Player1.WinsAmount++;
-                OnWinsAmountChanged.Invoke();
+                OnRoundEnd.Invoke();
             }
         }
 
@@ -178,9 +172,9 @@ namespace SFML
             Ball.circle.Position.X <= 0;
 
         private bool HasBallReachedRightGate() =>
-             Ball.circle.Position.X >= Width - BallRadius;
+             Ball.circle.Position.X >= Width - (int)Radiuses.Ball;
 
-        private bool IsEndRound() =>
+        private bool IsEndGame() =>
             Player1.WinsAmount == WinsAmountToWin || Player2.WinsAmount == WinsAmountToWin;
 
         public void DrawResults()

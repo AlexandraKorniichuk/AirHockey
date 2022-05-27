@@ -1,11 +1,14 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using System;
 
 namespace SFML
 {
     public class Circle : CircleShape
     {
         public Vector2f Direction;
+        public Vector2f MaxDirection;
+        public Random rand;
 
         public void CreateCircle(Color color, int radius)
         {
@@ -46,6 +49,31 @@ namespace SFML
 
             if (Direction.Y > 5)
                 Direction.Y *= percentage;
+        }
+
+        public bool HaveObjectsClashed(CircleShape OtherCircle) =>
+            VectorExtencions.CalculateSquaredDistance(Position, OtherCircle.Position)
+            <= (Radius + OtherCircle.Radius) * (Radius + OtherCircle.Radius);
+
+        public void SetBallDirectionAfterClash(Vector2f PlayerDirection)
+        {
+            Direction += (int)Radiuses.Player * PlayerDirection / Radius;
+            ChangeDirectionIfHigherThanMax();
+        }
+
+        private void ChangeDirectionIfHigherThanMax()
+        {
+            if (Direction.X > MaxDirection.X)
+                Direction.X = MaxDirection.X;
+            if (Direction.Y > MaxDirection.Y)
+                Direction.Y = MaxDirection.Y;
+        }
+
+        public void SetRandomPosition()
+        {
+            int X = rand.Next((int)Radius, (int)Game.Width - (int)Radius);
+            int Y = rand.Next((int)Radius, (int)Game.Heigh - (int)Radius);
+            Position = new Vector2f(X, Y);
         }
     }
 }
