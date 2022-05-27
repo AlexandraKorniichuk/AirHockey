@@ -38,7 +38,7 @@ namespace SFML
             CreateObjects();
             SetStartPositions();
             CustomizeText();
-            Mouse.SetPosition((Vector2i)Player1.circle.circle.Position, Window);
+            Mouse.SetPosition((Vector2i)Player1.circle.Position, Window);
             OnWinsAmountChanged += SetStartPositions;
 
             GameLoop();
@@ -96,9 +96,9 @@ namespace SFML
 
         private void Draw()
         {
-            Window.Draw(Player1.circle.circle);
-            Window.Draw(Player2.circle.circle);
-            Window.Draw(Ball.circle.circle);
+            Window.Draw(Player1.circle);
+            Window.Draw(Player2.circle);
+            Window.Draw(Ball.circle);
             Window.Draw(GetScoreMessage());
         }
 
@@ -116,7 +116,7 @@ namespace SFML
 
         private void MoveObjects(Vector2f MousePosition)
         {
-            Vector2f PlayerPosition = Player1.circle.circle.Position;
+            Vector2f PlayerPosition = Player1.circle.Position;
             LastPlayerPosition = PlayerPosition;
 
             if (IsMouseInside(MousePosition))
@@ -135,7 +135,7 @@ namespace SFML
         {
             Ball.circle.ChangeDirectionIfOutside();
             Player2.circle.ChangeDirectionIfOutside();
-            Player1.circle.Direction = Player1.circle.circle.Position - LastPlayerPosition;
+            Player1.circle.Direction = Player1.circle.Position - LastPlayerPosition;
         }
 
         private void ChangeBallDirectionIfClashed()
@@ -146,7 +146,7 @@ namespace SFML
 
         private void CheckClashWithPlayer(GamePlayer Player)
         {
-            if (HaveObjectsClashed(Player.circle.circle.Position, Ball.circle.circle.Position))
+            if (HaveObjectsClashed(Player.circle.Position, Ball.circle.Position))
                 SetBallDirectionAfterClash(Player.circle.Direction);
         }
 
@@ -175,10 +175,10 @@ namespace SFML
         }
 
         private bool HasBallReachedLeftGate() =>
-            Ball.circle.circle.Position.X <= 0;
+            Ball.circle.Position.X <= 0;
 
         private bool HasBallReachedRightGate() =>
-             Ball.circle.circle.Position.X >= Width - BallRadius;
+             Ball.circle.Position.X >= Width - BallRadius;
 
         private bool IsEndRound() =>
             Player1.WinsAmount == WinsAmountToWin || Player2.WinsAmount == WinsAmountToWin;

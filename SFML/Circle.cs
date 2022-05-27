@@ -3,44 +3,40 @@ using SFML.System;
 
 namespace SFML
 {
-    public class Circle
+    public class Circle : CircleShape
     {
-        public CircleShape circle { get; private set; }
         public Vector2f Direction;
 
-        public void CreateCircle(Color Color, int Radius)
+        public void CreateCircle(Color color, int radius)
         {
-            circle = new CircleShape()
-            {
-                FillColor = Color,
-                Radius = Radius,
-                Origin = new Vector2f(Radius, Radius),
-            };
+            FillColor = color;
+            Radius = radius;
+            Origin = new Vector2f(Radius, Radius);
         }
 
-        public void SetPosition(Vector2f Position)
+        public void SetPosition(Vector2f position)
         {
-            circle.Position = Position;
+            Position = position;
         }
 
         public void ChangePosition()
         {
-            circle.Position += Direction;
+            Position += Direction;
         }
 
         public void ChangeDirectionIfOutside()
         {
-            if (!IsObjectXInside(circle.Position, rightEdge: 0))
+            if (!IsObjectXInside(Position, rightEdge: 0))
                 Direction.X *= -1;
-            if (!IsObjectYInside(circle.Position))
+            if (!IsObjectYInside(Position))
                 Direction.Y *= -1;
         }
 
         public bool IsObjectXInside(Vector2f position, uint rightEdge = 0, uint leftEdge = Game.Width) =>
-            position.X >= rightEdge + circle.Radius && position.X <= leftEdge - circle.Radius;
+            position.X >= rightEdge + Radius && position.X <= leftEdge - Radius;
 
         public bool IsObjectYInside(Vector2f position) =>
-            position.Y >= circle.Radius && position.Y <= Game.Heigh - circle.Radius;
+            position.Y >= Radius && position.Y <= Game.Heigh - Radius;
 
         public void DecreaseDirection()
         {

@@ -1,7 +1,4 @@
-﻿using SFML.Graphics;
-using SFML.System;
-
-namespace SFML
+﻿namespace SFML
 {
     public class GamePlayer 
     {
