@@ -52,11 +52,10 @@ namespace SFML
             {
                 Window.DispatchEvents();
 
-                Vector2f MousePosition = (Vector2f)Mouse.GetPosition(Window);
-                InputPlayerDirection();
+                Vector2f MousePosition = InputController.GetMousePosition(Window);
+                PlayerDirection.Y = InputController.InputPlayerDirection();
                 MoveObjects(MousePosition);
                 ChangeDirections();
-                Ball.DecreaseDirection();
                 ChangeBallDirectionIfClashed();
                 CheckingForCoin();
                 CheckingForGoalScore();
@@ -103,16 +102,6 @@ namespace SFML
             ScoreText.Position = new Vector2f(Width / 2 - Size / 2, TextY);
         }
 
-        private void InputPlayerDirection()
-        {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.W))
-                PlayerDirection.Y = -10;
-            else if (Keyboard.IsKeyPressed(Keyboard.Key.S))
-                PlayerDirection.Y = 10;
-            else
-                PlayerDirection.Y = 0;
-        }
-
         private void Draw()
         {
             Window.Draw(Coin);
@@ -156,6 +145,8 @@ namespace SFML
             Ball.ChangeDirectionIfOutside();
             Player2.circle.Direction = PlayerDirection;
             Player1.circle.Direction = Player1.circle.Position - LastPlayerPosition;
+
+            Ball.DecreaseDirection();
         }
 
         private void ChangeBallDirectionIfClashed()
@@ -207,6 +198,18 @@ namespace SFML
 
         public void DrawResults()
         {
+            Text ResultText = CreateResults();
+
+            while (!InputController.IsEnterPressed())
+            {
+                Window.Draw(ResultText);
+                Window.Display();
+                Window.Clear();
+            }
+        }
+
+        private Text CreateResults()
+        {
             const uint Size = 40;
             string Winner = Player1.WinsAmount == WinsAmountToWin ? nameof(Player1) : nameof(Player2);
             Text ResultText = new Text
@@ -216,13 +219,7 @@ namespace SFML
                 Position = new Vector2f(Width / 2 - 5 * Size, Heigh / 2),
                 Font = new Font("BasicText.ttf")
             };
-
-            while (!Keyboard.IsKeyPressed(Keyboard.Key.Enter))
-            {
-                Window.Draw(ResultText);
-                Window.Display();
-                Window.Clear();
-            }
+            return ResultText;
         }
     }
 }

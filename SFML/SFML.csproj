@@ -63,6 +63,7 @@
     <Compile Include="Circle.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GamePlayer.cs" />
+    <Compile Include="InputController.cs" />
     <Compile Include="ObjectsRadiuses.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
