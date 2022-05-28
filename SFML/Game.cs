@@ -19,6 +19,7 @@ namespace SFML
         private const int WinsAmountToWin = 7;
         private Text ScoreText;
         private Vector2f LastPlayerPosition;
+        private Vector2f PlayerDirection;
 
         private Action OnRoundEnd;
 
@@ -30,6 +31,7 @@ namespace SFML
             Player2 = new GamePlayer();
             Ball = new Ball();
             Coin = new Coin();
+            PlayerDirection = new Vector2f(0, 0);
             ScoreText = new Text("", new Font("BasicText.ttf"));
         }
 
@@ -51,10 +53,12 @@ namespace SFML
                 Window.DispatchEvents();
 
                 Vector2f MousePosition = (Vector2f)Mouse.GetPosition(Window);
+                InputPlayerDirection();
                 MoveObjects(MousePosition);
                 ChangeDirections();
                 Ball.circle.DecreaseDirection();
                 ChangeBallDirectionIfClashed();
+                CheckingForCoin();
                 CheckingForGoalScore();
                 Draw();
                 Wait();
@@ -84,7 +88,7 @@ namespace SFML
 
             position.X = Width - distanceFromEdge;
             Player2.circle.SetPosition(position);
-            Player2.circle.Direction = new Vector2f(0, 15);
+            Player2.circle.Direction = new Vector2f(0, 0);
 
             Coin.circle.SetRandomPosition();
         }
@@ -97,12 +101,22 @@ namespace SFML
             ScoreText.Position = new Vector2f(Width / 2 - Size / 2, TextY);
         }
 
+        private void InputPlayerDirection()
+        {
+            if (Keyboard.IsKeyPressed(Keyboard.Key.W))
+                PlayerDirection.Y = -10;
+            else if (Keyboard.IsKeyPressed(Keyboard.Key.S))
+                PlayerDirection.Y = 10;
+            else
+                PlayerDirection.Y = 0;
+        }
+
         private void Draw()
         {
+            Window.Draw(Coin.circle);
             Window.Draw(Player1.circle);
             Window.Draw(Player2.circle);
             Window.Draw(Ball.circle);
-            Window.Draw(Coin.circle);
             Window.Draw(GetScoreMessage());
         }
 
@@ -127,7 +141,7 @@ namespace SFML
                 PlayerPosition = MousePosition;
 
             Player1.circle.SetPosition(PlayerPosition);
-            Player2.circle.ChangePosition();
+            Player2.circle.ChangePositionIfInside();
             Ball.circle.ChangePosition();
         }
 
@@ -138,20 +152,39 @@ namespace SFML
         private void ChangeDirections()
         {
             Ball.circle.ChangeDirectionIfOutside();
-            Player2.circle.ChangeDirectionIfOutside();
+            Player2.circle.Direction = PlayerDirection;
             Player1.circle.Direction = Player1.circle.Position - LastPlayerPosition;
         }
 
         private void ChangeBallDirectionIfClashed()
         {
-            CheckClashWithPlayer(Player1);
-            CheckClashWithPlayer(Player2);
+            CheckClashWithBall(Player1, Player2);
+            CheckClashWithBall(Player2, Player1);
         }
 
-        private void CheckClashWithPlayer(GamePlayer Player)
+        private void CheckClashWithBall(GamePlayer ClashingPlayer, GamePlayer OtherPlayer)
         {
-            if (Ball.circle.HaveObjectsClashed(Player.circle))
-                Ball.circle.SetBallDirectionAfterClash(Player.circle.Direction);
+            if (Ball.circle.HaveObjectsClashed(ClashingPlayer.circle))
+            {
+                Ball.circle.SetBallDirectionAfterClash(ClashingPlayer.circle.Direction);
+                ClashingPlayer.IsPlayerHitBall = true;
+                OtherPlayer.IsPlayerHitBall = false;
+            }
+        }
+
+        private void CheckingForCoin()
+        {
+            CheckClashWithCoin(Player1);
+            CheckClashWithCoin(Player2);
+        }
+
+        private void CheckClashWithCoin(GamePlayer Player)
+        {
+            if (Coin.circle.HaveObjectsClashed(Ball.circle) && Player.IsPlayerHitBall)
+            {
+                Player.WinsAmount++;
+                Coin.circle.SetRandomPosition();
+            }
         }
 
         private void CheckingForGoalScore()

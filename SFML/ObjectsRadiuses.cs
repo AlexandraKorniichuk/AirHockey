@@ -6,7 +6,7 @@ namespace SFML
     {
         Player = 30,
         Ball = 15, 
-        Coin = 5
+        Coin = 8
     }
 
     public class Colors

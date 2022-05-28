@@ -35,6 +35,12 @@ namespace SFML
                 Direction.Y *= -1;
         }
 
+        public void ChangePositionIfInside()
+        {
+            if (IsObjectYInside(Position + Direction))
+                ChangePosition();
+        }
+
         public bool IsObjectXInside(Vector2f position, uint rightEdge = 0, uint leftEdge = Game.Width) =>
             position.X >= rightEdge + Radius && position.X <= leftEdge - Radius;
 
@@ -57,6 +63,7 @@ namespace SFML
 
         public void SetBallDirectionAfterClash(Vector2f PlayerDirection)
         {
+            if (PlayerDirection.Y == 0) PlayerDirection.Y = 1;
             Direction += (int)Radiuses.Player * PlayerDirection / Radius;
             ChangeDirectionIfHigherThanMax();
         }
