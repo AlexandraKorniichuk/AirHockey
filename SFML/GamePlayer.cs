@@ -3,7 +3,6 @@
     public class GamePlayer 
     {
         public int WinsAmount;
-        public bool IsPlayerHitBall;
         public Circle circle;
 
         public GamePlayer()

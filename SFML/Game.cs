@@ -20,6 +20,7 @@ namespace SFML
         private Text ScoreText;
         private Vector2f LastPlayerPosition;
         private Vector2f PlayerDirection;
+        private GamePlayer LastTouchedPlayer;
 
         private Action OnRoundEnd;
 
@@ -91,6 +92,7 @@ namespace SFML
             Player2.circle.Direction = new Vector2f(0, 0);
 
             Coin.circle.SetRandomPosition();
+            LastTouchedPlayer = null;
         }
 
         private void CustomizeText()
@@ -158,17 +160,16 @@ namespace SFML
 
         private void ChangeBallDirectionIfClashed()
         {
-            CheckClashWithBall(Player1, Player2);
-            CheckClashWithBall(Player2, Player1);
+            CheckClashWithBall(Player1);
+            CheckClashWithBall(Player2);
         }
 
-        private void CheckClashWithBall(GamePlayer ClashingPlayer, GamePlayer OtherPlayer)
+        private void CheckClashWithBall(GamePlayer ClashingPlayer)
         {
             if (Ball.circle.HaveObjectsClashed(ClashingPlayer.circle))
             {
                 Ball.circle.SetBallDirectionAfterClash(ClashingPlayer.circle.Direction);
-                ClashingPlayer.IsPlayerHitBall = true;
-                OtherPlayer.IsPlayerHitBall = false;
+                LastTouchedPlayer = ClashingPlayer;
             }
         }
 
@@ -180,7 +181,7 @@ namespace SFML
 
         private void CheckClashWithCoin(GamePlayer Player)
         {
-            if (Coin.circle.HaveObjectsClashed(Ball.circle) && Player.IsPlayerHitBall)
+            if (Coin.circle.HaveObjectsClashed(Ball.circle) && Player == LastTouchedPlayer)
             {
                 Player.WinsAmount++;
                 Coin.circle.SetRandomPosition();
