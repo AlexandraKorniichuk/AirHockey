@@ -7,8 +7,15 @@ namespace SFML
     public class Circle : CircleShape
     {
         public Vector2f Direction;
-        public Vector2f MaxDirection;
-        public Random rand;
+
+        private Vector2f MaxDirection;
+        private Random rand;
+
+        public Circle()
+        {
+            rand = new Random();
+            MaxDirection = new Vector2f(15, 15);
+        }
 
         public void CreateCircle(Color color, int radius)
         {
@@ -20,6 +27,11 @@ namespace SFML
         public void SetPosition(Vector2f position)
         {
             Position = position;
+        }
+
+        public void SetDirection()
+        {
+            Direction = new Vector2f(0, 0);
         }
 
         public void ChangePosition()
@@ -82,5 +94,11 @@ namespace SFML
             int Y = rand.Next((int)Radius, (int)Game.Heigh - (int)Radius);
             Position = new Vector2f(X, Y);
         }
+
+        public bool HasBallReachedLeftGate() =>
+            Position.X <= 0;
+
+        public bool HasBallReachedRightGate() =>
+             Position.X >= Game.Width - (int)Radiuses.Ball;
     }
 }
