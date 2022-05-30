@@ -174,7 +174,7 @@ namespace SFML
         {
             if (Coin.HaveObjectsClashed(Ball) && Player == LastTouchedPlayer)
             {
-                Player.WinsAmount++;
+                Player.IncreaseWins();
                 Coin.SetRandomPosition();
             }
         }
@@ -183,12 +183,12 @@ namespace SFML
         {
             if (Ball.HasBallReachedLeftGate())
             {
-                Player2.WinsAmount++;
+                Player2.IncreaseWins();
                 OnRoundEnd.Invoke();
             }
             else if (Ball.HasBallReachedRightGate())
             {
-                Player1.WinsAmount++;
+                Player1.IncreaseWins();
                 OnRoundEnd.Invoke();
             }
         }
